@@ -163,7 +163,7 @@ private fun MemoryFlowRoot(viewModel: MemoryViewModel = viewModel()) {
         else -> MemoryFeed(
             uiState = uiState,
             onIndex = viewModel::setIndex,
-            onLike = viewModel::toggleLike,
+            onLike = viewModel::addLike,
             onDoubleLike = viewModel::doubleTapLike,
             onSaveText = viewModel::saveTextNote,
             onDeleteNote = viewModel::deleteNote,
@@ -292,6 +292,7 @@ private fun MemoryFeed(
         TopBar(uiState.currentItem)
         ActionRail(
             liked = uiState.currentState?.isLiked == true,
+            likeCount = uiState.currentState?.likeCount ?: 0,
             noteCount = uiState.notes.size,
             onLike = onLike,
             onNotes = { showNotes = true },
@@ -417,7 +418,7 @@ private fun TopBar(item: MediaItemEntity?) {
 }
 
 @Composable
-private fun ActionRail(liked: Boolean, noteCount: Int, onLike: () -> Unit, onNotes: () -> Unit, onMore: () -> Unit) {
+private fun ActionRail(liked: Boolean, likeCount: Int, noteCount: Int, onLike: () -> Unit, onNotes: () -> Unit, onMore: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(end = 14.dp, bottom = 42.dp),
         horizontalAlignment = Alignment.End,
@@ -429,9 +430,10 @@ private fun ActionRail(liked: Boolean, noteCount: Int, onLike: () -> Unit, onNot
         ) {
             RailButton(
                 icon = if (liked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                label = if (liked) "已赞" else "点赞",
+                label = "点赞",
                 tint = if (liked) Primary else Color.White,
-                onClick = onLike
+                onClick = onLike,
+                count = likeCount
             )
             RailDivider()
             RailButton(Icons.Default.ChatBubbleOutline, "评论", Color.White, onNotes, count = noteCount)

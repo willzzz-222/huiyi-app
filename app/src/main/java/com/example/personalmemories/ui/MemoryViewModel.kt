@@ -96,11 +96,15 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun toggleLike() {
+    fun addLike() {
         val item = _uiState.value.currentItem ?: return
         viewModelScope.launch {
             val old = dao.stateByKey(item.mediaKey) ?: MediaStateEntity(mediaKey = item.mediaKey)
-            val next = old.copy(isLiked = !old.isLiked, updatedAt = System.currentTimeMillis())
+            val next = old.copy(
+                isLiked = true,
+                likeCount = old.likeCount + 1,
+                updatedAt = System.currentTimeMillis()
+            )
             dao.upsertState(next)
             _uiState.value = _uiState.value.copy(currentState = next)
         }
@@ -110,7 +114,11 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
         val item = _uiState.value.currentItem ?: return
         viewModelScope.launch {
             val old = dao.stateByKey(item.mediaKey) ?: MediaStateEntity(mediaKey = item.mediaKey)
-            val next = old.copy(isLiked = true, updatedAt = System.currentTimeMillis())
+            val next = old.copy(
+                isLiked = true,
+                likeCount = old.likeCount + 1,
+                updatedAt = System.currentTimeMillis()
+            )
             dao.upsertState(next)
             _uiState.value = _uiState.value.copy(currentState = next, message = "已点赞")
         }

@@ -30,6 +30,7 @@ data class MediaItemEntity(
 data class MediaStateEntity(
     @PrimaryKey val mediaKey: String,
     val isLiked: Boolean = false,
+    val likeCount: Int = 0,
     val viewCount: Int = 0,
     val lastSeenAt: Long = 0L,
     val updatedAt: Long = System.currentTimeMillis()
