@@ -35,12 +35,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
@@ -434,7 +434,7 @@ private fun ActionRail(liked: Boolean, noteCount: Int, onLike: () -> Unit, onNot
                 onClick = onLike
             )
             RailDivider()
-            RailButton(Icons.Default.Info, "记录", Color.White, onNotes, count = noteCount)
+            RailButton(Icons.Default.ChatBubbleOutline, "评论", Color.White, onNotes, count = noteCount)
             RailDivider()
             RailButton(Icons.Default.MoreVert, "更多", Color.White, onMore)
         }
@@ -609,7 +609,7 @@ private fun NoteRow(note: MemoryNoteEntity, onDelete: (MemoryNoteEntity) -> Unit
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            if (note.type == NoteType.AUDIO) Icons.Default.PlayArrow else Icons.Default.Info,
+            if (note.type == NoteType.AUDIO) Icons.Default.PlayArrow else Icons.Default.ChatBubbleOutline,
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier.size(24.dp)
