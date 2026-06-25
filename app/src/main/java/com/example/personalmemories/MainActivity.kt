@@ -569,7 +569,7 @@ private fun RecordingControls(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(10.dp).clip(CircleShape).background(Danger))
                 Spacer(Modifier.width(8.dp))
-                Text("正在录音", color = Color.White)
+                Text("正在录音 ${formatDuration(uiState.recordingElapsedMs)}", color = Color.White)
             }
             Button(onClick = onFinishRecording, colors = ButtonDefaults.buttonColors(containerColor = Danger), shape = RoundedCornerShape(12.dp)) {
                 Icon(Icons.Default.Pause, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -675,6 +675,13 @@ private fun InfoRow(label: String, value: String) {
 private fun formatDate(time: Long): String {
     if (time <= 0L) return "未知时间"
     return SimpleDateFormat("yyyy年M月d日", Locale.CHINA).format(Date(time))
+}
+
+private fun formatDuration(durationMs: Long): String {
+    val totalSeconds = (durationMs / 1000L).coerceAtLeast(0L)
+    val minutes = totalSeconds / 60L
+    val seconds = totalSeconds % 60L
+    return "%02d:%02d".format(minutes, seconds)
 }
 
 private fun mediaPermissions(): Array<String> = when {

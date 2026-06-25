@@ -36,6 +36,7 @@ data class MemoryUiState(
     val notes: List<MemoryNoteEntity> = emptyList(),
     val message: String? = null,
     val recording: Boolean = false,
+    val recordingElapsedMs: Long = 0L,
     val recordedDraft: VoiceDraft? = null
 ) {
     val currentItem: MediaItemEntity? get() = queue.getOrNull(currentIndex)?.let { key -> items.firstOrNull { it.mediaKey == key } }
@@ -50,6 +51,7 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
     val uiState: StateFlow<MemoryUiState> = _uiState.asStateFlow()
     private var activeRecordingPath: String? = null
     private var recordingLimitJob: Job? = null
+    private var recordingTickerJob: Job? = null
 
     init {
         app.audio.onAudioFocusNeeded = { pauseVideoSignal() }
@@ -152,7 +154,14 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
             runCatching { app.audio.startRecording(file) }
                 .onSuccess {
                     activeRecordingPath = relative
-                    _uiState.value = _uiState.value.copy(recording = true, recordedDraft = null, message = "正在录音")
+                    _uiState.value = _uiState.value.copy(recording = true, recordingElapsedMs = 0L, recordedDraft = null, message = "正在录音")
+                    recordingTickerJob?.cancel()
+                    recordingTickerJob = viewModelScope.launch {
+                        while (_uiState.value.recording) {
+                            delay(250L)
+                            _uiState.value = _uiState.value.copy(recordingElapsedMs = _uiState.value.recordingElapsedMs + 250L)
+                        }
+                    }
                     recordingLimitJob?.cancel()
                     recordingLimitJob = viewModelScope.launch {
                         delay(5 * 60 * 1000L)
@@ -168,14 +177,16 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
             val duration = app.audio.stopRecording()
             recordingLimitJob?.cancel()
             recordingLimitJob = null
+            recordingTickerJob?.cancel()
+            recordingTickerJob = null
             val candidate = activeRecordingPath?.let { File(app.filesDir, it) }
             activeRecordingPath = null
             if (duration < 1000 || candidate == null || !candidate.exists()) {
                 candidate?.delete()
-                _uiState.value = _uiState.value.copy(recording = false, message = "录音太短，未保存")
+                _uiState.value = _uiState.value.copy(recording = false, recordingElapsedMs = 0L, message = "录音太短，未保存")
             } else {
                 val relative = candidate.relativeTo(app.filesDir).path
-                _uiState.value = _uiState.value.copy(recording = false, recordedDraft = VoiceDraft(relative, duration), message = "录音完成，可试听后保存")
+                _uiState.value = _uiState.value.copy(recording = false, recordingElapsedMs = 0L, recordedDraft = VoiceDraft(relative, duration), message = "录音完成，可试听后保存")
             }
         }
     }
@@ -185,10 +196,12 @@ class MemoryViewModel(application: Application) : AndroidViewModel(application) 
             app.audio.cancelRecording()
             recordingLimitJob?.cancel()
             recordingLimitJob = null
+            recordingTickerJob?.cancel()
+            recordingTickerJob = null
             activeRecordingPath?.let { File(app.filesDir, it).delete() }
             activeRecordingPath = null
             _uiState.value.recordedDraft?.path?.let { File(app.filesDir, it).delete() }
-            _uiState.value = _uiState.value.copy(recording = false, recordedDraft = null)
+            _uiState.value = _uiState.value.copy(recording = false, recordingElapsedMs = 0L, recordedDraft = null)
         }
     }
 
