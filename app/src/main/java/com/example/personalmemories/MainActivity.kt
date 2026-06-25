@@ -602,10 +602,20 @@ private fun RecordingControls(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun NoteRow(note: MemoryNoteEntity, onDelete: (MemoryNoteEntity) -> Unit, onPlayVoice: (String) -> Unit) {
+    var deleteVisible by remember(note.noteId) { mutableStateOf(false) }
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White.copy(0.075f)).padding(12.dp),
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(if (deleteVisible) 0.11f else 0.075f))
+            .combinedClickable(
+                onClick = { if (deleteVisible) deleteVisible = false },
+                onLongClick = { deleteVisible = true }
+            )
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -629,8 +639,10 @@ private fun NoteRow(note: MemoryNoteEntity, onDelete: (MemoryNoteEntity) -> Unit
                 Icon(Icons.Default.PlayArrow, contentDescription = "播放语音", tint = Color.White)
             }
         }
-        IconButton(onClick = { onDelete(note) }) {
-            Icon(Icons.Default.Close, contentDescription = "删除记录", tint = Color.White.copy(0.66f))
+        if (deleteVisible) {
+            IconButton(onClick = { onDelete(note) }) {
+                Icon(Icons.Default.Close, contentDescription = "删除记录", tint = Color.White.copy(0.78f))
+            }
         }
     }
 }
